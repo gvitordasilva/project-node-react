@@ -19,9 +19,10 @@ Sistema completo para gerenciamento de formacao, incluindo cadastro de usuarios,
 ### Backend
 - Node.js + Express
 - Sequelize ORM
-- SQLite (banco de dados)
+- PostgreSQL (banco de dados)
 - JWT para autenticacao
 - Multer para upload de arquivos
+- Docker
 
 ### Frontend
 - React 18
@@ -29,10 +30,38 @@ Sistema completo para gerenciamento de formacao, incluindo cadastro de usuarios,
 - Axios
 - React Toastify
 - React Icons
+- Nginx (producao)
 
 ## Como Executar
 
-### Backend
+### Opcao 1: Docker Compose (Recomendado)
+
+Executa tudo com um unico comando:
+
+```bash
+# Subir todos os servicos (PostgreSQL + Backend + Frontend)
+docker-compose up -d
+
+# Ver logs
+docker-compose logs -f
+
+# Parar servicos
+docker-compose down
+```
+
+Acesse:
+- Frontend: http://localhost:3000
+- API: http://localhost:5000
+
+### Opcao 2: Desenvolvimento Local
+
+#### 1. Subir apenas o PostgreSQL com Docker
+
+```bash
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+#### 2. Backend
 
 ```bash
 cd backend
@@ -43,7 +72,7 @@ npm run dev   # Inicia servidor em modo desenvolvimento
 
 O servidor iniciara na porta 5000.
 
-### Frontend
+#### 3. Frontend
 
 ```bash
 cd frontend
@@ -52,6 +81,43 @@ npm start
 ```
 
 O frontend iniciara na porta 3000.
+
+### Opcao 3: PostgreSQL Local (sem Docker)
+
+Se voce ja tem PostgreSQL instalado:
+
+1. Crie o banco de dados:
+```sql
+CREATE DATABASE sistema_formativo;
+```
+
+2. Configure as variaveis de ambiente no arquivo `backend/.env`:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=sistema_formativo
+DB_USER=seu_usuario
+DB_PASSWORD=sua_senha
+```
+
+3. Execute o backend normalmente.
+
+## Variaveis de Ambiente
+
+Copie o arquivo `.env.example` para `.env` e configure:
+
+```env
+PORT=5000
+JWT_SECRET=sua_chave_secreta
+NODE_ENV=development
+
+# PostgreSQL
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=sistema_formativo
+DB_USER=postgres
+DB_PASSWORD=postgres
+```
 
 ## Credenciais de Acesso
 
@@ -69,7 +135,10 @@ Apos executar o seed, use estas credenciais:
 ## Estrutura do Projeto
 
 ```
+├── docker-compose.yml      # Producao (todos os servicos)
+├── docker-compose.dev.yml  # Desenvolvimento (apenas PostgreSQL)
 ├── backend/
+│   ├── Dockerfile
 │   ├── src/
 │   │   ├── config/         # Configuracoes (DB, seed)
 │   │   ├── controllers/    # Logica de negocios
@@ -80,11 +149,32 @@ Apos executar o seed, use estas credenciais:
 │   └── uploads/            # Arquivos enviados
 │
 └── frontend/
+    ├── Dockerfile
+    ├── nginx.conf
     └── src/
         ├── components/     # Componentes reutilizaveis
         ├── contexts/       # Context API (Auth)
         ├── pages/          # Paginas da aplicacao
         └── services/       # Servicos de API
+```
+
+## Comandos Docker Uteis
+
+```bash
+# Build e iniciar
+docker-compose up -d --build
+
+# Ver logs de um servico especifico
+docker-compose logs -f backend
+
+# Acessar shell do container
+docker-compose exec backend sh
+
+# Executar seed dentro do container
+docker-compose exec backend npm run seed
+
+# Limpar tudo (incluindo volumes)
+docker-compose down -v
 ```
 
 ## API Endpoints
